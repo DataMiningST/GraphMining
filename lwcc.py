@@ -4,6 +4,7 @@ import sys
 import io
 
 from snap import *
+from CompressIds import compressIds
 
 
 def computeLWCCInplace(graph):
@@ -41,6 +42,8 @@ print('Edges: ' + str(graph.GetEdges()))
 computeLWCCInplace(graph)
 print('Nodes: ' + str(graph.GetNodes()))
 print('Edges: ' + str(graph.GetEdges()))
+
+graph = compressIds(graph)
 
 savefilename = filename + '-lwcc.graph'
 out = TFOut(savefilename)
