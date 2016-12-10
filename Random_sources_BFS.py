@@ -1,10 +1,11 @@
+#!/usr/bin/python2
+
 import sys
 import io
 import snap
 import numpy as np
 
 from snap import *
-from UnionFind import *
 
 if len(sys.argv) < 2:
     error('No filename given')
