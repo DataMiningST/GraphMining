@@ -1,4 +1,7 @@
-#!/bin/python2
+#!/usr/bin/python2
+
+import sys
+import io
 
 from snap import *
 from UnionFind import *
@@ -43,12 +46,20 @@ def computeLWCCInplace(graph):
     graph.Defrag()
     print('Computed largest weakly connected component.')
 
+if len(sys.argv) < 2:
+    error('No filename given')
 
-graph = LoadEdgeList(PNGraph, "wiki-Vote.txt", 0, 1)
-print(graph.GetNodes())
-print(graph.GetEdges())
+filename = sys.argv[1]
+
+graph = LoadEdgeList(PNGraph, filename, 0, 1)
+print('Nodes: ' + str(graph.GetNodes()))
+print('Edges: ' + str(graph.GetEdges()))
 
 computeLWCCInplace(graph)
+print('Nodes: ' + str(graph.GetNodes()))
+print('Edges: ' + str(graph.GetEdges()))
 
-print(graph.GetNodes())
-print(graph.GetEdges())
+savefilename = filename + '-lwcc.graph'
+out = TFOut(savefilename)
+graph.Save(out)
+out.Flush()
