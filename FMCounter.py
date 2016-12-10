@@ -9,12 +9,19 @@ import sys
 class FMCounter:
     phi = 0.77351 # Magic constant from paper
 
-    def __init__(self, ncounters):
+    '''
+    Creates a new probabilistic counter with ncounters bitvectors and a maximum word size of wordsize.
+    The wordsize is not checked later on, passing hashes wider than wordsize leads to undefined behaviour.
+    '''
+    def __init__(self, ncounters, wordsize):
         self.counters = [0] * ncounters
+        self.wordsize = wordsize
 
-    def add(self, object):
-        h = hash(object) # BAD HASH FUNCTION!!!
-        
+    '''
+    Adds the hash h to the counter.
+    If the values for h are not uniformly randomly distributed, they should be hashed before.
+    '''
+    def add(self, h):
         i = h % len(counters)
         bit = smallestOneBit(h // len(counters))
         self.counters[i] |= bit
@@ -24,7 +31,7 @@ class FMCounter:
     '''
     def smallestOneBit(self, n):
         if n == 0:
-            return 2**sys.getsizeof(n)
+            return 2**wordsize
     
         result = 1
         
