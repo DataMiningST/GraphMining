@@ -1,5 +1,6 @@
 '''
 Probabilistic counter from Flajolet and Martin.
+It ignores duplicates while counting the contents of a multiset.
 
 See http://www.sciencedirect.com/science/article/pii/0022000085900418
 '''
@@ -51,7 +52,7 @@ class FMCounter:
             n //= 2
         
         return result
-        
+    
     def evaluate(self):
         sum = 0
     
