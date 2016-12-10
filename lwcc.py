@@ -4,7 +4,6 @@ import sys
 import io
 
 from snap import *
-from UnionFind import *
 
 
 def computeLWCCInplace(graph):
