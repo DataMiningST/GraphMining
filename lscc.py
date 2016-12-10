@@ -30,7 +30,7 @@ def computeLSCCInplace(graph):
     print('Computed largest strongly connected component.')
 
 if len(sys.argv) < 2:
-    error('No filename given')
+    raise Exception('No filename given')
 
 filename = sys.argv[1]
 
