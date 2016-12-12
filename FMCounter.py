@@ -99,7 +99,7 @@ class FMCounter:
         return bit
     
     def union(self, other):
-        for i in xrange(self.wordsize):
+        for i in xrange(len(self.counters)):
             self.counters[i] |= other.counters[i]
             
     def __str__(self):
