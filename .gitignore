@@ -5,5 +5,8 @@
 *.graph
 
 data/
+Snap-3.0/examples/
+
+fms
 
 !README.txt
