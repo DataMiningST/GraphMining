@@ -54,14 +54,14 @@ void FMCounter::initialize(mt19937& random) {
     }
 }
 
-uint32_t FMCounter::evaluate() {
+uint64_t FMCounter::evaluate() {
     double sum = 0;
 
     for (int i = 0; i < ncounters; i++) {
 	sum += smallestZeroBitPosition(counters[i]);
     }
 
-    return (uint32_t) (1.0 / phi * pow(2, sum / ncounters));
+    return (uint64_t) (1.0 / phi * pow(2, sum / ncounters));
 }
 
 void FMCounter::_union(FMCounter& other) {

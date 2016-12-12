@@ -32,7 +32,7 @@ public:
     void initialize(mt19937& random);
 
     // Evaluates the size of the counter
-    uint32_t evaluate();
+    uint64_t evaluate();
 
     void _union(FMCounter& other);
 };

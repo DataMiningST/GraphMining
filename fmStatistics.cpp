@@ -10,14 +10,14 @@ using namespace std;
 using namespace std::chrono;
 using namespace TSnap;
 
-const int maxDistance = 11; // Cap for the maximum distance checked. Don't know how to automate this yet.
+const int abortEqualDistanceChainLength = 5;
 
 PNGraph loadGraph(TStr& path) {
     TFIn FIn(path);
     return TNGraph::Load(FIn);
 }
 
-vector<uint32_t> anc0(PNGraph graph) {
+vector<uint64_t> anc0(PNGraph graph) {
     mt19937 random(chrono::system_clock::now().time_since_epoch().count());
 
     // Initialize counters
@@ -28,10 +28,12 @@ vector<uint32_t> anc0(PNGraph graph) {
 	currentCounters[i].initialize(random);
     }
 
-    vector<uint32_t> distanceSums(maxDistance + 1);
-    distanceSums[0] = 0;
+    vector<uint64_t> distanceSums;
+    distanceSums.push_back(0);
+    int equalDistanceChainLength = 0;
+    bool abort = false;
 
-    for (int distance = 1; distance < distanceSums.size(); distance++) {
+    for (unsigned distance = 1; !abort; distance++) {
         for (int i = 0; i < graph->GetNodes(); i++) {
             lastCounters[i] = currentCounters[i];
 	}
@@ -40,10 +42,20 @@ vector<uint32_t> anc0(PNGraph graph) {
 	    currentCounters[edge.GetSrcNId()]._union(lastCounters[edge.GetDstNId()]);
 	}
 
-	distanceSums[distance] = 0;
+	distanceSums.push_back(0);
         for (int i = 0; i < graph->GetNodes(); i++) {
             distanceSums[distance] += currentCounters[i].evaluate();
 	}
+
+        if (distanceSums[distance] == distanceSums[distance - 1]) {
+            equalDistanceChainLength++;
+
+            if (equalDistanceChainLength >= abortEqualDistanceChainLength) {
+                abort = true;
+            }
+        } else {
+            equalDistanceChainLength = 0;
+        }
     }
 
     return distanceSums;
@@ -59,18 +71,23 @@ int main(int argc, char** argv) {
     PNGraph graph(loadGraph(filename));
 
     high_resolution_clock::time_point startTime = high_resolution_clock::now();
-    vector<uint32_t> distanceSums = anc0(graph);
+    vector<uint64_t> distanceSums = anc0(graph);
     high_resolution_clock::time_point endTime = high_resolution_clock::now();
 
-    vector<uint32_t> distanceHistogram(distanceSums.size() - 1);
-    for (int i = 0; i < distanceHistogram.size(); i++) {
+    vector<uint64_t> distanceHistogram(distanceSums.size() - 1);
+    for (unsigned i = 0; i < distanceHistogram.size(); i++) {
         distanceHistogram[i] = distanceSums[i + 1] - distanceSums[i];
     }
 
     // Print out computation statistics
 
-    uint32_t histogramSum = distanceSums[maxDistance];
-    cout << "Node pairs found: " << histogramSum << "/" << (graph->GetNodes() * graph->GetNodes()) << endl;
+    uint64_t histogramSum = distanceSums[distanceSums.size() - 1];
+    int oldPrecision = cout.precision();
+    cout.precision(4);
+    cout << "Node pairs fraction: " << ((double) histogramSum / ((double) graph->GetNodes() * graph->GetNodes())) << endl;
+    cout.precision(oldPrecision);
+
+    cout << "Max distance checked: " << distanceSums.size() - 1 << endl;
 
     bool once = true;
     for (auto n: distanceHistogram) {
@@ -91,11 +108,11 @@ int main(int argc, char** argv) {
 
     // Median distance
 
-    uint32_t medianIndex = histogramSum / 2;
-    uint32_t histogramIndex = 0;
+    uint64_t medianIndex = histogramSum / 2;
+    uint64_t histogramIndex = 0;
     int median = -1;
 
-    for (int i = 0; i < distanceHistogram.size(); i++) {
+    for (unsigned i = 0; i < distanceHistogram.size(); i++) {
         histogramIndex += distanceHistogram[i];
 
 	if (histogramIndex >= medianIndex) {
@@ -110,7 +127,7 @@ int main(int argc, char** argv) {
 
     double mean = 0;
 
-    for (int i = 0; i < distanceHistogram.size(); i++) {
+    for (unsigned i = 0; i < distanceHistogram.size(); i++) {
         mean += i * distanceHistogram[i];
     }
 
@@ -121,7 +138,7 @@ int main(int argc, char** argv) {
     
     int diameter = -1;
 
-    for (int i = distanceHistogram.size() - 1; i >= 0; i--) {
+    for (unsigned i = distanceHistogram.size() - 1; i >= 0; i--) {
         if (distanceHistogram[i] != 0) {
             diameter = i;
             break;
@@ -132,11 +149,11 @@ int main(int argc, char** argv) {
 
     // Effective diameter
 
-    uint32_t edIndex = (uint32_t) (histogramSum * 0.9);
+    uint64_t edIndex = (uint64_t) (histogramSum * 0.9);
     histogramIndex = 0;
     int effectiveDiameter = -1;
 
-    for (int i = 0; i < distanceHistogram.size(); i++) {
+    for (unsigned i = 0; i < distanceHistogram.size(); i++) {
         histogramIndex += distanceHistogram[i];
 
 	if (histogramIndex >= edIndex) {
