@@ -79,7 +79,7 @@ class FMCounter:
     isSetUnionMode: True if the counter was used with the union method, false if it was used with the add method.
     '''
     def evaluate(self, isSetUnionMode = True):
-        sum = 0
+        sum = 0.0
     
         for counter in self.counters:
             sum += self.smallestZeroBitPosition(counter)
