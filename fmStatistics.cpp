@@ -7,6 +7,7 @@
 
 
 using namespace std;
+using namespace std::chrono;
 using namespace TSnap;
 
 const int maxDistance = 11; // Cap for the maximum distance checked. Don't know how to automate this yet.
@@ -56,9 +57,12 @@ int main(int argc, char** argv) {
     TStr filename(argv[1]);
 
     PNGraph graph(loadGraph(filename));
-    vector<uint32_t> distanceSums = anc0(graph);
-    vector<uint32_t> distanceHistogram(distanceSums.size() - 1);
 
+    high_resolution_clock::time_point startTime = high_resolution_clock::now();
+    vector<uint32_t> distanceSums = anc0(graph);
+    high_resolution_clock::time_point endTime = high_resolution_clock::now();
+
+    vector<uint32_t> distanceHistogram(distanceSums.size() - 1);
     for (int i = 0; i < distanceHistogram.size(); i++) {
         distanceHistogram[i] = distanceSums[i + 1] - distanceSums[i];
     }
@@ -79,6 +83,11 @@ int main(int argc, char** argv) {
         cout << n;
     }
     cout << endl;
+
+    // Execution time
+
+    double duration = duration_cast<microseconds>( endTime - startTime ).count() / 1e6;
+    cout << "Execution time: " << duration << "s" << endl;
 
     // Median distance
 

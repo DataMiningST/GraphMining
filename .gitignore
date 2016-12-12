@@ -3,6 +3,7 @@
 *.pyc
 *.swp
 *.graph
+*.o
 
 data/
 Snap-3.0/examples/
