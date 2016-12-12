@@ -4,4 +4,6 @@
 *.swp
 *.graph
 
+data/
+
 !README.txt
