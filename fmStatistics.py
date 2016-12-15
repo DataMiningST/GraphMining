@@ -7,6 +7,7 @@ import random
 from snap import *
 from FMCounter import FMCounter
 from copy import copy
+from printStatistics import *
 
 counterWidth = 64 # 64 bit is most modern systems word width
 ncounters = 64 # Value used in paper, gives average error < 10%
@@ -53,48 +54,4 @@ histogramSum = distances[maxDistance]
 print("Node pairs found: " + str(distances[maxDistance]) + "/" + str(graph.GetNodes()**2))
 print(distanceHistogram)
 
-# Calculate median distance from histogram
-
-medianIndex = histogramSum // 2
-histogramIndex = 0
-
-for i, bucket in enumerate(distanceHistogram):
-    histogramIndex += bucket
-    
-    if histogramIndex >= medianIndex:
-        median = i
-        break
-
-print("Median distance: " + str(median))
-
-# Calculate mean distance from histogram
-
-mean = 0.0
-for i in xrange(len(distanceHistogram)):
-    mean += i * distanceHistogram[i]
-
-mean /= histogramSum
-print("Mean distance: " + str(mean))
-
-# Diameter (= max of all distances)
-
-for i, bucket in reversed(list(enumerate(distanceHistogram))):
-    if bucket != 0:
-        diameter = i
-        break
-
-print("Diameter: " + str(diameter))
-
-# Effective diameter
-
-edIndex = int(histogramSum * 0.9)
-histogramIndex = 0
-
-for i, bucket in enumerate(distanceHistogram):
-    histogramIndex += bucket
-    
-    if histogramIndex >= edIndex:
-        effectiveDiameter = i
-        break
-
-print("Effective diameter: " + str(effectiveDiameter))
+printStatistics(distanceHistogram, histogramSum)
