@@ -5,36 +5,61 @@ import sys
 from snap import *
 from printStatistics import *
 
-if len(sys.argv) < 3:
-    raise Exception('Missing arguments. Please give filename and true/false if graph is directed')
+from joblib import Parallel, delayed
+import multiprocessing
+
+
+def process_node(node):
+    global graph
+    global isDirected
+
+    output = TIntPrV()
+    GetNodesAtHops(graph, node, output, isDirected)
+
+    out_list = [0] * output.Len()
+
+    for pair in output:
+        if pair.GetVal1() >= len(out_list):
+            out_list += [0] * (pair.GetVal1() - len(out_list) + 1)
+
+        out_list[pair.GetVal1()] += pair.GetVal2()
+
+    return out_list
+
+
+if len(sys.argv) < 2:
+    raise Exception('Missing arguments. Please give filename.')
 
 filename = sys.argv[1]
-if sys.argv[2].lower() == 'true':
-    isDirected = True
-elif sys.argv[2].lower() == 'false':
-    isDirected = False
-else:
-    raise Exception('Please give either true or false as second argument to indicate if the graph should be viewed as directed or not')
+
+isDirected = "lscc" in str(filename)
 
 inStream = TFIn(filename)
 graph = TNGraph.Load(inStream)
 
 # Calculate distance histogram by making a full BFS for every node
 
-upperDiameterBound = GetBfsFullDiam(graph, 1, isDirected) * 2
-distanceHistogram = [0] * (upperDiameterBound + 1)
-print('Upper bound for diameter: ' + str(upperDiameterBound))
+num_cores = multiprocessing.cpu_count()
+pool = multiprocessing.pool.ThreadPool(processes=num_cores)
 
+inputs = []
 for node in graph.Nodes():
-    output = TIntPrV()
-    GetNodesAtHops(graph, node.GetId(), output, isDirected)
+    inputs += [node.GetId()]
 
-    for distance in output:
-        if distance.GetVal1() >= len(distanceHistogram):
-            distanceHistogram += [0] * (distance.GetVal1() - len(distanceHistogram) + 1)
+results = pool.map(process_node, inputs)
 
-        distanceHistogram[distance.GetVal1()] += distance.GetVal2()
+print(results)
+
+distanceHistogram = []
+for hist in results:
+    if len(hist) >= len(distanceHistogram):
+        distanceHistogram += [0] * (len(hist) - len(distanceHistogram) + 1)
+
+    for i in xrange(len(hist)):
+        distanceHistogram[i] += hist[i]
 
 print(distanceHistogram)
 
 printStatistics(distanceHistogram)
+
+
