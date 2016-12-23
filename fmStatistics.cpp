@@ -17,7 +17,7 @@ PNGraph loadGraph(TStr& path) {
     return TNGraph::Load(FIn);
 }
 
-vector<uint64_t> anc0(PNGraph graph) {
+vector<uint64_t> anc0(PNGraph graph, bool isDirected) {
     mt19937 random(chrono::system_clock::now().time_since_epoch().count());
 
     // Initialize counters
@@ -40,6 +40,10 @@ vector<uint64_t> anc0(PNGraph graph) {
 
 	for (TNGraph::TEdgeI edge = graph->BegEI(); edge != graph->EndEI(); edge++) {
 	    currentCounters[edge.GetSrcNId()]._union(lastCounters[edge.GetDstNId()]);
+
+	    if (isDirected) {
+	        currentCounters[edge.GetDstNId()]._union(lastCounters[edge.GetSrcNId()]);
+	    }
 	}
 
 	distanceSums.push_back(0);
@@ -67,11 +71,14 @@ int main(int argc, char** argv) {
     }
 
     TStr filename(argv[1]);
+    string cpp_fn(argv[1]);
+
+    bool isDirected = cpp_fn.find("lscc");
 
     PNGraph graph(loadGraph(filename));
 
     high_resolution_clock::time_point startTime = high_resolution_clock::now();
-    vector<uint64_t> distanceSums = anc0(graph);
+    vector<uint64_t> distanceSums = anc0(graph, isDirected);
     high_resolution_clock::time_point endTime = high_resolution_clock::now();
 
     vector<uint64_t> distanceHistogram(distanceSums.size() - 1);
