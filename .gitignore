@@ -6,8 +6,11 @@
 *.o
 
 data/
+results/
 Snap-3.0/examples/
 
 fms
+
+/.idea
 
 !README.txt

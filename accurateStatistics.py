@@ -48,8 +48,6 @@ for node in graph.Nodes():
 
 results = pool.map(process_node, inputs)
 
-print(results)
-
 distanceHistogram = []
 for hist in results:
     if len(hist) >= len(distanceHistogram):
