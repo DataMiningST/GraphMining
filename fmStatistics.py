@@ -18,6 +18,8 @@ if len(sys.argv) < 2:
 
 filename = sys.argv[1]
 
+isDirected = "lscc" in str(filename)
+
 inStream = TFIn(filename)
 graph = TNGraph.Load(inStream)
 
@@ -40,6 +42,9 @@ for distance in xrange(1, maxDistance + 1):
 
     for edge in graph.Edges():
         currentCounters[edge.GetSrcNId()].union(lastCounters[edge.GetDstNId()])
+
+        if not isDirected:
+            currentCounters[edge.GetDstNId()].union(lastCounters[edge.GetSrcNId()])
     
     for counter in currentCounters:
         distances[distance] += counter.evaluate(True)
