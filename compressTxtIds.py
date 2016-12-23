@@ -21,7 +21,7 @@ with open(filename) as f, open(resultfilename, "w") as resultfile:
         raw_ids = line.split(" ")
 
         for i in xrange(2):
-            if raw_ids[i] not in ids.keys():
+            if not ids.has_key(raw_ids[i]):
                 ids[raw_ids[i]] = cur_id
                 cur_id += 1
 
