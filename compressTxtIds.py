@@ -22,7 +22,7 @@ with open(filename) as f, open(resultfilename, "w") as resultfile:
 
         for i in xrange(2):
             if raw_ids[i] not in ids.keys():
-                ids[raw_ids] = cur_id
+                ids[raw_ids[i]] = cur_id
                 cur_id += 1
 
-        resultfile.write(ids[raw_ids[0]] + " " + ids[raw_ids[1]] + "\n")
+        resultfile.write(str(ids[raw_ids[0]]) + " " + str(ids[raw_ids[1]]) + "\n")
