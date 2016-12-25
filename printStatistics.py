@@ -1,9 +1,12 @@
-def printStatistics(distanceHistogram, histogramSum = -1):
+def printStatistics(distanceHistogram, histogramSum = -1, accuracy=None):
     if histogramSum == -1:
         histogramSum = 0
 
         for n in distanceHistogram:
             histogramSum += n
+
+    if accuracy is not None:
+        print("Accuracy: " + str(accuracy))
 
     # Calculate median distance from histogram
     

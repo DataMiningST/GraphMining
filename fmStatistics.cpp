@@ -4,6 +4,8 @@
 #include <vector>
 #include <chrono>
 #include <iostream>
+#include <cstdlib>
+#include <limits>
 
 
 using namespace std;
@@ -17,15 +19,17 @@ PNGraph loadGraph(TStr& path) {
     return TNGraph::Load(FIn);
 }
 
-vector<uint64_t> anc0(PNGraph graph, bool isDirected) {
+vector<uint64_t> anc0(PNGraph graph, unsigned minIterations, unsigned maxIterations, bool isDirected, const unsigned accuracy) {
     mt19937 random(chrono::system_clock::now().time_since_epoch().count());
 
     // Initialize counters
-    FMCounter *currentCounters = new FMCounter[graph->GetNodes()];
-    FMCounter *lastCounters = new FMCounter[graph->GetNodes()];
+    FMCounter counter(accuracy);
+
+    uint32_t *currentCounters = (uint32_t*) malloc(graph->GetNodes() * accuracy * sizeof(uint32_t));
+    uint32_t *lastCounters = (uint32_t*) malloc(graph->GetNodes() * accuracy * sizeof(uint32_t));
 
     for (int i = 0; i < graph->GetNodes(); i++) {
-	currentCounters[i].initialize(random);
+        counter.initialize(random, currentCounters + i * accuracy);
     }
 
     vector<uint64_t> distanceSums;
@@ -34,27 +38,29 @@ vector<uint64_t> anc0(PNGraph graph, bool isDirected) {
     bool abort = false;
 
     for (unsigned distance = 1; !abort; distance++) {
+        memcpy(lastCounters, currentCounters, graph->GetNodes() * accuracy * sizeof(uint32_t));
+
+        for (TNGraph::TEdgeI edge = graph->BegEI(); edge != graph->EndEI(); edge++) {
+            counter._union(currentCounters + edge.GetSrcNId() * accuracy, lastCounters + edge.GetDstNId() * accuracy);
+
+            if (isDirected) {
+                counter._union(currentCounters + edge.GetDstNId() * accuracy, lastCounters + edge.GetSrcNId() * accuracy);
+            }
+        }
+
+        distanceSums.push_back(0);
         for (int i = 0; i < graph->GetNodes(); i++) {
-            lastCounters[i] = currentCounters[i];
-	}
+            distanceSums[distance] += counter.evaluate(currentCounters + i * accuracy);
+        }
 
-	for (TNGraph::TEdgeI edge = graph->BegEI(); edge != graph->EndEI(); edge++) {
-	    currentCounters[edge.GetSrcNId()]._union(lastCounters[edge.GetDstNId()]);
-
-	    if (isDirected) {
-	        currentCounters[edge.GetDstNId()]._union(lastCounters[edge.GetSrcNId()]);
-	    }
-	}
-
-	distanceSums.push_back(0);
-        for (int i = 0; i < graph->GetNodes(); i++) {
-            distanceSums[distance] += currentCounters[i].evaluate();
-	}
+        if (distance >= maxIterations) {
+            abort = true;
+        }
 
         if (distanceSums[distance] == distanceSums[distance - 1]) {
             equalDistanceChainLength++;
 
-            if (equalDistanceChainLength >= abortEqualDistanceChainLength) {
+            if (equalDistanceChainLength >= abortEqualDistanceChainLength && distance >= minIterations) {
                 abort = true;
             }
         } else {
@@ -62,23 +68,36 @@ vector<uint64_t> anc0(PNGraph graph, bool isDirected) {
         }
     }
 
+    free(currentCounters);
+    free(lastCounters);
+
     return distanceSums;
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
-	cout << "No filename given" << endl;
+    if (argc < 3) {
+        cout << "Please give the filename and the accuracy parameter as program arguments" << endl;
     }
 
     TStr filename(argv[1]);
     string cpp_fn(argv[1]);
 
     bool isDirected = cpp_fn.find("lscc");
+    unsigned accuracy = atoi(argv[2]);
+
+    cout << "Accuracy: " << accuracy << endl;
 
     PNGraph graph(loadGraph(filename));
 
+    unsigned minIterations = numeric_limits<unsigned>::min();
+    unsigned maxIterations = numeric_limits<unsigned>::max();
+
+    if (!isDirected) {
+        minIterations = maxIterations = GetBfsFullDiam(graph, 1, false);
+    }
+
     high_resolution_clock::time_point startTime = high_resolution_clock::now();
-    vector<uint64_t> distanceSums = anc0(graph, isDirected);
+    vector<uint64_t> distanceSums = anc0(graph, minIterations, maxIterations, isDirected, accuracy);
     high_resolution_clock::time_point endTime = high_resolution_clock::now();
 
     vector<uint64_t> distanceHistogram(distanceSums.size() - 1);

@@ -17,7 +17,7 @@ using namespace std;
 
 class FMCounter {
 private:
-    alignas(16) uint32_t counters[ncounters];
+    int ncounters;
     static constexpr double phi = 0.77351; // Magic constant from paper
 
     // Calculates the position of the smallest zero bit in n
@@ -26,13 +26,12 @@ private:
     uint32_t getFMRandomBit(mt19937& random);
     
 public:
-    FMCounter();
-    FMCounter(const FMCounter& fmCounter);
+    FMCounter(int ncounters);
 
-    void initialize(mt19937& random);
+    void initialize(mt19937& random, uint32_t *counters);
 
     // Evaluates the size of the counter
-    uint64_t evaluate();
+    uint64_t evaluate(uint32_t *counters);
 
-    void _union(FMCounter& other);
+    void _union(uint32_t *selfCounters, uint32_t *otherCounters);
 };

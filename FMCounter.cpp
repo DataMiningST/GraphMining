@@ -39,33 +39,27 @@ inline uint32_t FMCounter::getFMRandomBit(mt19937& random) {
     return result;
 }
 
-FMCounter::FMCounter() {
+FMCounter::FMCounter(int ncounters) : ncounters(ncounters) {
 }
 
-FMCounter::FMCounter(const FMCounter& fmCounter) {
+void FMCounter::initialize(mt19937& random, uint32_t *counters) {
     for (int i = 0; i < ncounters; i++) {
-        counters[i] = fmCounter.counters[i];
+	    counters[i] = getFMRandomBit(random);
     }
 }
 
-void FMCounter::initialize(mt19937& random) {
-    for (int i = 0; i < ncounters; i++) {
-	counters[i] = getFMRandomBit(random);
-    }
-}
-
-uint64_t FMCounter::evaluate() {
+uint64_t FMCounter::evaluate(uint32_t *counters) {
     double sum = 0;
 
     for (int i = 0; i < ncounters; i++) {
-	sum += smallestZeroBitPosition(counters[i]);
+	    sum += smallestZeroBitPosition(counters[i]);
     }
 
     return (uint64_t) (1.0 / phi * pow(2, sum / ncounters));
 }
 
-void FMCounter::_union(FMCounter& other) {
+void FMCounter::_union(uint32_t *selfCounters, uint32_t *otherCounters) {
     for (int i = 0; i < ncounters; i++) {
-	counters[i] |= other.counters[i];
+	    selfCounters[i] |= otherCounters[i];
     }
 }

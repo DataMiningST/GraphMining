@@ -21,7 +21,6 @@ def process_nodes(nodes):
         output = TIntPrV()
         GetNodesAtHops(graph, node, output, isDirected)
 
-
         for pair in output:
             if pair.GetVal1() >= len(out_list):
                 out_list += [0] * (pair.GetVal1() - len(out_list) + 1)
@@ -36,7 +35,7 @@ if len(sys.argv) < 2:
 
 filename = sys.argv[1]
 
-isDirected = "lscc" in str(filename)
+isDirected = "lscc" in filename
 
 inStream = TFIn(filename)
 graph = TNGraph.Load(inStream)

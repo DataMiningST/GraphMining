@@ -18,7 +18,7 @@ if len(sys.argv) < 2:
 
 filename = sys.argv[1]
 
-isDirected = "lscc" in str(filename)
+isDirected = "lscc" in filename
 
 inStream = TFIn(filename)
 graph = TNGraph.Load(inStream)
