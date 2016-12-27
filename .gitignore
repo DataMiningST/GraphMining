@@ -4,6 +4,7 @@
 *.swp
 *.graph
 *.o
+*.zip
 
 data/
 results/
