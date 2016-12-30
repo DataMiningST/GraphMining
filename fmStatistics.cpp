@@ -12,7 +12,7 @@ using namespace std;
 using namespace std::chrono;
 using namespace TSnap;
 
-const int abortEqualDistanceChainLength = 5;
+const int abortEqualDistanceChainLength = 1;
 
 PNGraph loadGraph(TStr& path) {
     TFIn FIn(path);
@@ -33,7 +33,7 @@ vector<uint64_t> anc0(PNGraph graph, unsigned minIterations, unsigned maxIterati
     }
 
     vector<uint64_t> distanceSums;
-    distanceSums.push_back(0);
+    distanceSums.push_back(graph->GetNodes());
     int equalDistanceChainLength = 0;
     bool abort = false;
 
@@ -93,17 +93,18 @@ int main(int argc, char** argv) {
     unsigned maxIterations = numeric_limits<unsigned>::max();
 
     if (!isDirected) {
-        minIterations = maxIterations = GetBfsFullDiam(graph, 1, false);
+        maxIterations = GetBfsFullDiam(graph, 1, false);
     }
 
     high_resolution_clock::time_point startTime = high_resolution_clock::now();
     vector<uint64_t> distanceSums = anc0(graph, minIterations, maxIterations, isDirected, accuracy);
     high_resolution_clock::time_point endTime = high_resolution_clock::now();
 
-    vector<uint64_t> distanceHistogram(distanceSums.size() - 1);
-    for (unsigned i = 0; i < distanceHistogram.size(); i++) {
-        distanceHistogram[i] = distanceSums[i + 1] - distanceSums[i];
+    vector<uint64_t> distanceHistogram(distanceSums.size());
+    for (unsigned i = 0; i < distanceHistogram.size() - 1; i++) {
+        distanceHistogram[i + 1] = distanceSums[i + 1] - distanceSums[i];
     }
+    distanceHistogram[0] = graph->GetNodes();
 
     // Print out computation statistics
 
