@@ -43,7 +43,7 @@ vector<uint64_t> anc0(PNGraph graph, unsigned minIterations, unsigned maxIterati
         for (TNGraph::TEdgeI edge = graph->BegEI(); edge != graph->EndEI(); edge++) {
             counter._union(currentCounters + edge.GetSrcNId() * accuracy, lastCounters + edge.GetDstNId() * accuracy);
 
-            if (isDirected) {
+            if (!isDirected) {
                 counter._union(currentCounters + edge.GetDstNId() * accuracy, lastCounters + edge.GetSrcNId() * accuracy);
             }
         }
@@ -86,6 +86,7 @@ int main(int argc, char** argv) {
     unsigned accuracy = atoi(argv[2]);
 
     cout << "Accuracy: " << accuracy << endl;
+    cout << "Directed mode: " << isDirected << endl;
 
     PNGraph graph(loadGraph(filename));
 
