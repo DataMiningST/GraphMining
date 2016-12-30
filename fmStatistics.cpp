@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     TStr filename(argv[1]);
     string cpp_fn(argv[1]);
 
-    bool isDirected = cpp_fn.find("lscc");
+    bool isDirected = cpp_fn.find("lscc") != -1;
     unsigned accuracy = atoi(argv[2]);
 
     cout << "Accuracy: " << accuracy << endl;
